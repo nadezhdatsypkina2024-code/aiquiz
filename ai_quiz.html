@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Какой ИИ твой? — тест</title>
+<style>
+  :root {
+    --bg: #0F0F13;
+    --card: #1A1A22;
+    --card2: #22222E;
+    --border: #2E2E3E;
+    --accent: #7C6BF8;
+    --accent2: #F857A6;
+    --accent3: #00D4AA;
+    --accent4: #FFB347;
+    --text: #F0EFF8;
+    --text-soft: #8888AA;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 52px 24px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 300px;
+    background: radial-gradient(ellipse, rgba(124,107,248,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    max-width: 560px;
+    margin: 0 auto 8px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    white-space: nowrap;
+  }
+
+  /* QUIZ WRAP */
+  .quiz-wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* QUESTION */
+  .question-block {
+    display: none;
+    animation: fadeUp 0.35s ease both;
+  }
+
+  .question-block.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-num {
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .q-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .q-emoji {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* OPTIONS */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: var(--text);
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+    line-height: 1.45;
+  }
+
+  .option:hover {
+    border-color: var(--accent);
+    background: rgba(124,107,248,0.08);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(124,107,248,0.15);
+  }
+
+  .opt-emoji { font-size: 1.2rem; flex-shrink: 0; }
+
+  /* RESULT */
+  #result-screen {
+    display: none;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .result-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .result-subtitle {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    margin-bottom: 28px;
+  }
+
+  /* CATEGORY CARD */
+  .cat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+  }
+
+  .cat-card.texts::before { background: var(--accent); }
+  .cat-card.video::before { background: var(--accent2); }
+  .cat-card.code::before { background: var(--accent3); }
+  .cat-card.learn::before { background: var(--accent4); }
+  .cat-card.russia::before { background: linear-gradient(180deg, #0039A6, #D52B1E); }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .cat-icon { font-size: 1.4rem; }
+
+  .cat-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .cat-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-left: auto;
+  }
+
+  .texts .cat-tag { background: rgba(124,107,248,0.2); color: var(--accent); }
+  .video .cat-tag { background: rgba(248,87,166,0.2); color: var(--accent2); }
+  .code .cat-tag { background: rgba(0,212,170,0.2); color: var(--accent3); }
+  .learn .cat-tag { background: rgba(255,179,71,0.2); color: var(--accent4); }
+  .russia .cat-tag { background: rgba(255,255,255,0.1); color: #fff; }
+
+  .cat-top-pick {
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    margin-bottom: 10px;
+  }
+
+  .tool-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tool-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--card2);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+
+  .tool-item:hover { background: rgba(124,107,248,0.1); }
+
+  .tool-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  .tool-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .tool-desc {
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    line-height: 1.4;
+    display: block;
+  }
+
+  .tool-badge {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-left: auto;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .badge-free { background: rgba(0,212,170,0.2); color: var(--accent3); }
+  .badge-paid { background: rgba(255,179,71,0.15); color: var(--accent4); }
+  .badge-freemium { background: rgba(124,107,248,0.2); color: var(--accent); }
+  .badge-ru { background: rgba(213,43,30,0.2); color: #ff6b6b; }
+
+  /* RESTART */
+  .btn-restart {
+    display: block;
+    width: 100%;
+    margin-top: 24px;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+
+  .btn-restart:hover { opacity: 0.88; }
+
+  .share-hint {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    margin-top: 14px;
+  }
+
+  /* FOOTER */
+  .quiz-footer {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.75rem;
+    margin-top: 40px;
+    line-height: 1.6;
+  }
+
+  /* MOBILE */
+  @media (max-width: 480px) {
+    .hero { padding: 36px 16px 28px; }
+    .quiz-wrap { padding: 0 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">✨ мини-тест · 7 вопросов</div>
+  <h1>Какой ИИ<br>подойдёт именно тебе?</h1>
+  <p>Быстрый тест — и ты получишь подборку реальных инструментов под твои задачи. С ценами, ссылками и пометкой «работает в России».</p>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+  <div class="progress-label" id="progress-label">1 / 7</div>
+</div>
+
+<div class="quiz-wrap">
+
+  <!-- ВОПРОСЫ -->
+  <div id="questions">
+
+    <!-- Q1 -->
+    <div class="question-block active" data-q="1">
+      <div class="q-num">Вопрос 1 из 7</div>
+      <span class="q-emoji">🎯</span>
+      <div class="q-text">Зачем тебе вообще нужен ИИ? Выбери главное.</div>
+      <div class="options">
+        <button class="option" data-cat="texts" onclick="pick(this)">
+          <span class="opt-emoji">✍️</span> Писать тексты — посты, письма, статьи, сценарии
+        </button>
+        <button class="option" data-cat="video" onclick="pick(this)">
+          <span class="opt-emoji">🎬</span> Делать видео, озвучку, аватары, монтаж
+        </button>
+        <button class="option" data-cat="code" onclick="pick(this)">
+          <span class="opt-emoji">💻</span> Делать сайты, приложения, автоматизацию — без кода или с ним
+        </button>
+        <button class="option" data-cat="learn" onclick="pick(this)">
+          <span class="opt-emoji">🧠</span> Учиться, разбираться в темах, готовиться к встречам
+        </button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-block" data-q="2">
+      <div class="q-num">Вопрос 2 из 7</div>
+      <span class="q-emoji">💰</span>
+      <div class="q-text">Как ты относишься к платным инструментам?</div>
+      <div class="options">
+        <button class="option" data-val="free" onclick="pick(this)">
+          <span class="opt-emoji">🆓</span> Только бесплатное — пока не понял зачем платить
+        </button>
+        <button class="option" data-val="freemium" onclick="pick(this)">
+          <span class="opt-emoji">🔄</span> Готов платить, если реально нужно и есть результат
+        </button>
+        <button class="option" data-val="paid" onclick="pick(this)">
+          <span class="opt-emoji">💳</span> Плачу без вопросов — время дороже
+        </button>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-block" data-q="3">
+      <div class="q-num">Вопрос 3 из 7</div>
+      <span class="q-emoji">🇷🇺</span>
+      <div class="q-text">Оплата — важный вопрос. Есть иностранная карта?</div>
+      <div class="options">
+        <button class="option" data-val="ru-only" onclick="pick(this)">
+          <span class="opt-emoji">🪆</span> Нет, только российская карта — нужны варианты для России
+        </button>
+        <button class="option" data-val="foreign" onclick="pick(this)">
+          <span class="opt-emoji">🌍</span> Да, есть — могу платить за что угодно
+        </button>
+        <button class="option" data-val="both" onclick="pick(this)">
+          <span class="opt-emoji">🤷</span> Иногда бывает, но не стабильно
+        </button>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-block" data-q="4">
+      <div class="q-num">Вопрос 4 из 7</div>
+      <span class="q-emoji">🖥️</span>
+      <div class="q-text">Как ты работаешь с технологиями?</div>
+      <div class="options">
+        <button class="option" data-val="nocode" onclick="pick(this)">
+          <span class="opt-emoji">🖱️</span> Просто кликаю — не хочу разбираться в настройках
+        </button>
+        <button class="option" data-val="medium" onclick="pick(this)">
+          <span class="opt-emoji">⚙️</span> Могу разобраться, если есть инструкция
+        </button>
+        <button class="option" data-val="pro" onclick="pick(this)">
+          <span class="opt-emoji">🤖</span> Мне интересно попробовать API, промпты, автоматизацию
+        </button>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-block" data-q="5">
+      <div class="q-num">Вопрос 5 из 7</div>
+      <span class="q-emoji">⏱️</span>
+      <div class="q-text">Как часто будешь пользоваться ИИ?</div>
+      <div class="options">
+        <button class="option" data-val="rarely" onclick="pick(this)">
+          <span class="opt-emoji">🌙</span> Изредка, когда приспичит
+        </button>
+        <button class="option" data-val="weekly" onclick="pick(this)">
+          <span class="opt-emoji">📅</span> Несколько раз в неделю
+        </button>
+        <button class="option" data-val="daily" onclick="pick(this)">
+          <span class="opt-emoji">🔥</span> Каждый день, уже не представляю без этого
+        </button>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-block" data-q="6">
+      <div class="q-num">Вопрос 6 из 7</div>
+      <span class="q-emoji">🗣️</span>
+      <div class="q-text">На каком языке работаешь в основном?</div>
+      <div class="options">
+        <button class="option" data-val="ru" onclick="pick(this)">
+          <span class="opt-emoji">🇷🇺</span> В основном по-русски
+        </button>
+        <button class="option" data-val="en" onclick="pick(this)">
+          <span class="opt-emoji">🇬🇧</span> По-английски тоже нормально
+        </button>
+        <button class="option" data-val="both-lang" onclick="pick(this)">
+          <span class="opt-emoji">🌐</span> Оба, зависит от задачи
+        </button>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-block" data-q="7">
+      <div class="q-num">Вопрос 7 из 7</div>
+      <span class="q-emoji">🚀</span>
+      <div class="q-text">Последний вопрос: что тебя пугает больше всего в ИИ?</div>
+      <div class="options">
+        <button class="option" data-val="quality" onclick="pick(this)">
+          <span class="opt-emoji">😬</span> Что выдаст чепуху и я облажаюсь
+        </button>
+        <button class="option" data-val="privacy" onclick="pick(this)">
+          <span class="opt-emoji">🔒</span> Что украдут мои данные
+        </button>
+        <button class="option" data-val="money" onclick="pick(this)">
+          <span class="opt-emoji">💸</span> Что потрачу деньги и ничего не пойму
+        </button>
+        <button class="option" data-val="nothing" onclick="pick(this)">
+          <span class="opt-emoji">😎</span> Ничего не пугает, уже пробовал(а)
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /questions -->
+
+  <!-- РЕЗУЛЬТАТ -->
+  <div id="result-screen">
+    <div class="result-title">🎉 Твоя подборка готова!</div>
+    <div class="result-subtitle">Инструменты подобраны под твои ответы. Все ссылки рабочие.</div>
+
+    <!-- ТЕКСТЫ -->
+    <div class="cat-card texts">
+      <div class="cat-header">
+        <span class="cat-icon">✍️</span>
+        <span class="cat-name">Тексты и общение</span>
+        <span class="cat-tag">Тексты</span>
+      </div>
+      <div class="cat-top-pick" id="texts-pick"></div>
+      <div class="tool-list">
+        <a href="https://claude.ai" target="_blank" class="tool-item">
+          <span class="tool-icon">🟠</span>
+          <div>
+            <span class="tool-name">Claude (Anthropic)</span>
+            <span class="tool-desc">Лучший для длинных текстов, анализа, редактуры. Понимает контекст лучше других. Работает без VPN в браузере.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://chatgpt.com" target="_blank" class="tool-item">
+          <span class="tool-icon">🟢</span>
+          <div>
+            <span class="tool-name">ChatGPT (OpenAI)</span>
+            <span class="tool-desc">Самый известный. Хорош для брейншторма, структурирования, переводов. Бесплатный GPT-4o есть.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://gemini.google.com" target="_blank" class="tool-item">
+          <span class="tool-icon">🔵</span>
+          <div>
+            <span class="tool-name">Gemini (Google)</span>
+            <span class="tool-desc">Интегрирован с Google Docs, Gmail, Drive. Удобен если уже в экосистеме Google.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://yandex.ru/gpt" target="_blank" class="tool-item">
+          <span class="tool-icon">🔴</span>
+          <div>
+            <span class="tool-name">YandexGPT</span>
+            <span class="tool-desc">Российский вариант. Платит рублями, работает без VPN. Хорош для русскоязычных текстов и документов.</span>
+          </div>
+          <span class="tool-badge badge-ru">🇷🇺 RU</span>
+        </a>
+        <a href="https://giga.chat" target="_blank" class="tool-item">
+          <span class="tool-icon">🟣</span>
+          <div>
+            <span class="tool-name">GigaChat (Сбер)</span>
+            <span class="tool-desc">Российский, оплата рублями, данные не уходят за рубеж. Хорошо работает с деловыми текстами.</span>
+          </div>
+          <span class="tool-badge badge-ru">🇷🇺 RU</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ВИДЕО -->
+    <div class="cat-card video">
+      <div class="cat-header">
+        <span class="cat-icon">🎬</span>
+        <span class="cat-name">Видео и визуал</span>
+        <span class="cat-tag">Видео</span>
+      </div>
+      <div class="tool-list">
+        <a href="https://runwayml.com" target="_blank" class="tool-item">
+          <span class="tool-icon">🎞️</span>
+          <div>
+            <span class="tool-name">Runway ML</span>
+            <span class="tool-desc">Генерация видео из текста и фото. Gen-3 Alpha — один из лучших. Есть бесплатный тариф.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://www.heygen.com" target="_blank" class="tool-item">
+          <span class="tool-icon">🧑‍💼</span>
+          <div>
+            <span class="tool-name">HeyGen</span>
+            <span class="tool-desc">ИИ-аватары и озвучка. Идеально для обучающих видео, презентаций, корпоративного контента.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://www.capcut.com" target="_blank" class="tool-item">
+          <span class="tool-icon">✂️</span>
+          <div>
+            <span class="tool-name">CapCut</span>
+            <span class="tool-desc">Монтаж с ИИ-функциями: авторезка, субтитры, удаление фона. Работает в браузере и приложении. Бесплатно.</span>
+          </div>
+          <span class="tool-badge badge-free">Бесплатно</span>
+        </a>
+        <a href="https://elevenlabs.io" target="_blank" class="tool-item">
+          <span class="tool-icon">🎙️</span>
+          <div>
+            <span class="tool-name">ElevenLabs</span>
+            <span class="tool-desc">Озвучка текста реалистичными голосами. Клонирование голоса. Лучший инструмент для аудио.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://www.midjourney.com" target="_blank" class="tool-item">
+          <span class="tool-icon">🖼️</span>
+          <div>
+            <span class="tool-name">Midjourney</span>
+            <span class="tool-desc">Генерация изображений. Лучший визуал для маркетинга, брендинга, иллюстраций. Только платный.</span>
+          </div>
+          <span class="tool-badge badge-paid">Платный</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- САЙТЫ И КОД -->
+    <div class="cat-card code">
+      <div class="cat-header">
+        <span class="cat-icon">💻</span>
+        <span class="cat-name">Сайты, код и вайб-кодинг</span>
+        <span class="cat-tag">Код</span>
+      </div>
+      <div class="tool-list">
+        <a href="https://v0.dev" target="_blank" class="tool-item">
+          <span class="tool-icon">⚡</span>
+          <div>
+            <span class="tool-name">v0 (Vercel)</span>
+            <span class="tool-desc">Пишешь что хочешь — получаешь готовый интерфейс. Лучший для вайб-кодинга без навыков. Бесплатный старт.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://lovable.dev" target="_blank" class="tool-item">
+          <span class="tool-icon">💜</span>
+          <div>
+            <span class="tool-name">Lovable</span>
+            <span class="tool-desc">Полноценное приложение из описания. Подключает базы данных, аутентификацию. Для более серьёзных проектов.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://bolt.new" target="_blank" class="tool-item">
+          <span class="tool-icon">🔩</span>
+          <div>
+            <span class="tool-name">Bolt.new</span>
+            <span class="tool-desc">Создаёт и запускает код прямо в браузере. Удобен для быстрых прототипов и лендингов.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://cursor.sh" target="_blank" class="tool-item">
+          <span class="tool-icon">🖱️</span>
+          <div>
+            <span class="tool-name">Cursor</span>
+            <span class="tool-desc">ИИ-редактор кода. Если уже умеешь немного программировать — ускорит в 5 раз. Бесплатный тариф есть.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://tilda.cc" target="_blank" class="tool-item">
+          <span class="tool-icon">🌐</span>
+          <div>
+            <span class="tool-name">Tilda + ИИ-блоки</span>
+            <span class="tool-desc">Российский конструктор сайтов с встроенным ИИ для текстов. Платит рублями, данные в России.</span>
+          </div>
+          <span class="tool-badge badge-ru">🇷🇺 RU</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ОБУЧЕНИЕ -->
+    <div class="cat-card learn">
+      <div class="cat-header">
+        <span class="cat-icon">🧠</span>
+        <span class="cat-name">Обучение и исследования</span>
+        <span class="cat-tag">Учёба</span>
+      </div>
+      <div class="tool-list">
+        <a href="https://notebooklm.google.com" target="_blank" class="tool-item">
+          <span class="tool-icon">📓</span>
+          <div>
+            <span class="tool-name">NotebookLM (Google)</span>
+            <span class="tool-desc">Загружаешь документы — задаёшь вопросы. Идеально для изучения материала, подготовки к встречам. Бесплатно.</span>
+          </div>
+          <span class="tool-badge badge-free">Бесплатно</span>
+        </a>
+        <a href="https://perplexity.ai" target="_blank" class="tool-item">
+          <span class="tool-icon">🔍</span>
+          <div>
+            <span class="tool-name">Perplexity AI</span>
+            <span class="tool-desc">ИИ-поиск со ссылками на источники. Лучший для исследований — всегда показывает откуда взял информацию.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://claude.ai" target="_blank" class="tool-item">
+          <span class="tool-icon">🟠</span>
+          <div>
+            <span class="tool-name">Claude Deep Research</span>
+            <span class="tool-desc">Режим глубокого исследования — сам ищет, анализирует, делает отчёт. Экономит часы работы.</span>
+          </div>
+          <span class="tool-badge badge-freemium">Freemium</span>
+        </a>
+        <a href="https://www.khanmigo.ai" target="_blank" class="tool-item">
+          <span class="tool-icon">📚</span>
+          <div>
+            <span class="tool-name">Khanmigo (Khan Academy)</span>
+            <span class="tool-desc">ИИ-репетитор от Khan Academy. Объясняет темы, задаёт вопросы, не даёт просто списать ответ.</span>
+          </div>
+          <span class="tool-badge badge-paid">Платный</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- РОССИЯ -->
+    <div class="cat-card russia">
+      <div class="cat-header">
+        <span class="cat-icon">🇷🇺</span>
+        <span class="cat-name">Работает в России · Платишь рублями</span>
+        <span class="cat-tag">RU-доступ</span>
+      </div>
+      <p style="font-size:0.82rem;color:var(--text-soft);margin-bottom:12px;">Инструменты с оплатой российской картой или бесплатным доступом без VPN.</p>
+      <div class="tool-list">
+        <a href="https://yandex.ru/gpt" target="_blank" class="tool-item">
+          <span class="tool-icon">🔴</span>
+          <div>
+            <span class="tool-name">YandexGPT / Алиса Про</span>
+            <span class="tool-desc">Тексты, суммаризация, ответы на вопросы. Рубли, без VPN, интеграция с Яндекс 360.</span>
+          </div>
+          <span class="tool-badge badge-ru">Рубли ✓</span>
+        </a>
+        <a href="https://giga.chat" target="_blank" class="tool-item">
+          <span class="tool-icon">🟣</span>
+          <div>
+            <span class="tool-name">GigaChat (Сбер)</span>
+            <span class="tool-desc">Тексты, код, изображения. Данные хранятся в России. Оплата рублями или бесплатно.</span>
+          </div>
+          <span class="tool-badge badge-ru">Рубли ✓</span>
+        </a>
+        <a href="https://claude.ai" target="_blank" class="tool-item">
+          <span class="tool-icon">🟠</span>
+          <div>
+            <span class="tool-name">Claude (бесплатный план)</span>
+            <span class="tool-desc">Работает в браузере без VPN. Бесплатный план достаточен для большинства задач. Платный — только иностранная карта.</span>
+          </div>
+          <span class="tool-badge badge-free">Бесплатно ✓</span>
+        </a>
+        <a href="https://tilda.cc" target="_blank" class="tool-item">
+          <span class="tool-icon">🌐</span>
+          <div>
+            <span class="tool-name">Tilda</span>
+            <span class="tool-desc">Сайты с ИИ-помощником. Рубли, российские серверы, поддержка на русском.</span>
+          </div>
+          <span class="tool-badge badge-ru">Рубли ✓</span>
+        </a>
+        <a href="https://www.capcut.com" target="_blank" class="tool-item">
+          <span class="tool-icon">✂️</span>
+          <div>
+            <span class="tool-name">CapCut</span>
+            <span class="tool-desc">Видеомонтаж с ИИ. Полностью бесплатный базовый план, работает без VPN.</span>
+          </div>
+          <span class="tool-badge badge-free">Бесплатно ✓</span>
+        </a>
+        <a href="https://shedevrum.ai" target="_blank" class="tool-item">
+          <span class="tool-icon">🎨</span>
+          <div>
+            <span class="tool-name">Шедеврум (Яндекс)</span>
+            <span class="tool-desc">Генерация изображений и видео. Российский аналог Midjourney. Бесплатно, без VPN.</span>
+          </div>
+          <span class="tool-badge badge-free">Бесплатно ✓</span>
+        </a>
+      </div>
+    </div>
+
+    <button class="btn-restart" onclick="restart()">🔄 Пройти тест заново</button>
+    <div class="share-hint">Поделись результатом с теми, кто ещё не разобрался с ИИ 👆</div>
+  </div>
+
+  <div class="quiz-footer">
+    Сделано с помощью Claude · <a href="https://t.me/" style="color:var(--accent);">Подписывайся на канал</a>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL = 7;
+  let current = 1;
+  let answers = {};
+
+  function pick(btn) {
+    // mark selected
+    const opts = btn.closest('.options').querySelectorAll('.option');
+    opts.forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    // save answer
+    const q = btn.closest('.question-block').dataset.q;
+    answers[q] = { cat: btn.dataset.cat, val: btn.dataset.val };
+
+    // next after short delay
+    setTimeout(() => {
+      if (current < TOTAL) {
+        nextQuestion();
+      } else {
+        showResult();
+      }
+    }, 320);
+  }
+
+  function nextQuestion() {
+    const cur = document.querySelector(`.question-block[data-q="${current}"]`);
+    cur.classList.remove('active');
+    current++;
+    const next = document.querySelector(`.question-block[data-q="${current}"]`);
+    next.classList.add('active');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const pct = ((current - 1) / TOTAL) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = current + ' / ' + TOTAL;
+  }
+
+  function showResult() {
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-label').textContent = '✓ Готово!';
+    document.getElementById('questions').style.display = 'none';
+
+    // personalise texts pick
+    const mainCat = answers[1]?.cat;
+    const pick = document.getElementById('texts-pick');
+    if (mainCat === 'texts') {
+      pick.textContent = '⭐ Это твоя главная категория — обрати особое внимание!';
+      pick.style.color = 'var(--accent)';
+    } else if (mainCat === 'video') {
+      document.querySelector('.cat-card.video .cat-tag').textContent = '★ Твоё главное';
+      document.querySelector('.cat-card.video .cat-tag').style.background = 'rgba(248,87,166,0.4)';
+    } else if (mainCat === 'code') {
+      document.querySelector('.cat-card.code .cat-tag').textContent = '★ Твоё главное';
+    } else if (mainCat === 'learn') {
+      document.querySelector('.cat-card.learn .cat-tag').textContent = '★ Твоё главное';
+    }
+
+    document.getElementById('result-screen').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function restart() {
+    current = 1;
+    answers = {};
+    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    document.getElementById('result-screen').style.display = 'none';
+    document.getElementById('questions').style.display = 'block';
+    document.querySelector('.question-block.active')?.classList.remove('active');
+    document.querySelector('.question-block[data-q="1"]').classList.add('active');
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-label').textContent = '1 / 7';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>

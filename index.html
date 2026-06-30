@@ -785,6 +785,14 @@
           </div>
           <span class="tool-badge badge-free">Бесплатно ✓</span>
         </a>
+        <a href="https://syntx.ai/ru" target="_blank" class="tool-item">
+          <span class="tool-icon">🔗</span>
+          <div>
+            <span class="tool-name">SYNTX AI — 90+ нейросетей в одном месте</span>
+            <span class="tool-desc">Один аккаунт — ChatGPT, Claude, Midjourney, Stable Diffusion и десятки других. Оплата рублями. Работает через Telegram и веб.</span>
+          </div>
+          <span class="tool-badge badge-ru">Рубли ✓</span>
+        </a>
       </div>
     </div>
 
@@ -843,19 +851,75 @@
     document.getElementById('progress-label').textContent = '✓ Готово!';
     document.getElementById('questions').style.display = 'none';
 
-    // personalise texts pick
-    const mainCat = answers[1]?.cat;
-    const pick = document.getElementById('texts-pick');
-    if (mainCat === 'texts') {
-      pick.textContent = '⭐ Это твоя главная категория — обрати особое внимание!';
-      pick.style.color = 'var(--accent)';
-    } else if (mainCat === 'video') {
-      document.querySelector('.cat-card.video .cat-tag').textContent = '★ Твоё главное';
-      document.querySelector('.cat-card.video .cat-tag').style.background = 'rgba(248,87,166,0.4)';
-    } else if (mainCat === 'code') {
-      document.querySelector('.cat-card.code .cat-tag').textContent = '★ Твоё главное';
-    } else if (mainCat === 'learn') {
-      document.querySelector('.cat-card.learn .cat-tag').textContent = '★ Твоё главное';
+    const mainCat = answers[1]?.cat;       // texts / video / code / learn
+    const budget  = answers[2]?.val;       // free / freemium / paid
+    const ruCard  = answers[3]?.val;       // ru-only / foreign / both
+    const techLvl = answers[4]?.val;       // nocode / medium / pro
+    const freq    = answers[5]?.val;       // rarely / weekly / daily
+    const lang    = answers[6]?.val;       // ru / en / both-lang
+
+    // --- скрываем все блоки ---
+    const blocks = { texts: false, video: false, code: false, learn: false };
+
+    // Главная категория — всегда показываем
+    blocks[mainCat] = true;
+
+    // Если пишет тексты и учится — добавляем оба
+    if (mainCat === 'texts' || mainCat === 'learn') {
+      blocks.texts = true;
+      blocks.learn = true;
+    }
+
+    // Если делает видео — добавляем видео
+    if (mainCat === 'video') blocks.video = true;
+
+    // Если код/сайты — добавляем код
+    if (mainCat === 'code') blocks.code = true;
+
+    // Продвинутые пользователи видят и код
+    if (techLvl === 'pro') blocks.code = true;
+
+    // Частые пользователи видят больше категорий
+    if (freq === 'daily') {
+      blocks.texts = true;
+      blocks.learn = true;
+    }
+
+    // Применяем видимость
+    document.querySelector('.cat-card.texts').style.display = blocks.texts ? 'block' : 'none';
+    document.querySelector('.cat-card.video').style.display = blocks.video ? 'block' : 'none';
+    document.querySelector('.cat-card.code').style.display  = blocks.code  ? 'block' : 'none';
+    document.querySelector('.cat-card.learn').style.display = blocks.learn ? 'block' : 'none';
+    // Россия — всегда (но особо подсвечиваем если только RU карта)
+    document.querySelector('.cat-card.russia').style.display = 'block';
+
+    // Метки «твоё главное»
+    const labels = { texts: '✍️ Тексты', video: '🎬 Видео', code: '💻 Код', learn: '🧠 Учёба' };
+    document.querySelectorAll('.cat-card').forEach(c => {
+      const tag = c.querySelector('.cat-tag');
+      if (!tag) return;
+      const isMain = c.classList.contains(mainCat);
+      if (isMain) {
+        tag.textContent = '⭐ Твоё главное';
+        tag.style.fontWeight = '900';
+      }
+    });
+
+    // Если только RU карта — добавить заметку в Russia блок
+    if (ruCard === 'ru-only') {
+      const ruNote = document.querySelector('.cat-card.russia p');
+      if (ruNote) {
+        ruNote.innerHTML = '🎯 <strong>Это особенно для тебя</strong> — ты выбрал(а) только российскую карту. Все инструменты ниже работают без VPN и принимают рубли.';
+        ruNote.style.color = 'var(--accent3)';
+      }
+    }
+
+    // Фильтр по бюджету — показываем подсказку
+    if (budget === 'free') {
+      document.querySelectorAll('.tool-badge.badge-paid').forEach(b => {
+        b.closest('.tool-item').style.opacity = '0.4';
+        b.closest('.tool-item').title = 'Только платный — но можешь вернуться позже';
+      });
     }
 
     document.getElementById('result-screen').style.display = 'block';
@@ -872,6 +936,14 @@
     document.querySelector('.question-block[data-q="1"]').classList.add('active');
     document.getElementById('progress-fill').style.width = '0%';
     document.getElementById('progress-label').textContent = '1 / 7';
+    // сброс видимости блоков
+    document.querySelectorAll('.cat-card').forEach(c => {
+      c.style.display = 'block';
+      c.style.opacity = '1';
+      const tag = c.querySelector('.cat-tag');
+      if (tag) { tag.style.fontWeight = ''; }
+    });
+    document.querySelectorAll('.tool-item').forEach(t => t.style.opacity = '1');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
